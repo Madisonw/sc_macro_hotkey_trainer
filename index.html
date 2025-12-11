@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BW Macro Hotkey Trainer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #101218;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .panel {
+      background: #161925;
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .panel small {
+      color: #b0b3c6;
+    }
+
+    label {
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 4px 6px;
+      text-align: left;
+    }
+
+    th {
+      border-bottom: 1px solid #303347;
+      color: #c3c6dd;
+      font-weight: 500;
+    }
+
+    tr:nth-child(even) td {
+      background: #181b28;
+    }
+
+    select, input[type="text"], textarea {
+      background: #10131f;
+      border: 1px solid #303347;
+      border-radius: 6px;
+      color: #f5f5f5;
+      padding: 4px 6px;
+      font-size: 13px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    input[type="text"] {
+      text-transform: uppercase;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      background: #3f7cff;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    button.secondary {
+      background: #262b3c;
+      color: #d0d3e7;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .buildings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .building-card {
+      border-radius: 10px;
+      padding: 10px;
+      background: #111320;
+      border: 1px solid #303347;
+      font-size: 13px;
+      position: relative;
+      overflow: hidden;
+      transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .building-hotkey {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .building-type {
+      color: #c3c6dd;
+    }
+
+    .status-green {
+      background: #17351d;
+      box-shadow: 0 0 12px rgba(0, 255, 120, 0.5);
+    }
+
+    .status-yellow {
+      background: #3e3613;
+      box-shadow: 0 0 12px rgba(255, 210, 0, 0.5);
+    }
+
+    .status-red {
+      background: #3b1414;
+      box-shadow: 0 0 12px rgba(255, 70, 70, 0.6);
+    }
+
+    .flash {
+      animation: flash-scale 0.3s ease-in-out 0s 2 alternate;
+    }
+
+    @keyframes flash-scale {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale(1.05);
+      }
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #c3c6dd;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+    }
+
+    .legend-green {
+      background: #2ecc71;
+    }
+
+    .legend-yellow {
+      background: #f1c40f;
+    }
+
+    .legend-red {
+      background: #e74c3c;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #a3a6bd;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>StarCraft: Brood War Macro Hotkey Trainer</h1>
+  <p class="hint">
+    Configure your building hotkeys and unit keybinds, then click the "start training button"
+  </p>
+
+  <div class="container">
+    <!-- CONFIG PANEL -->
+    <div class="panel">
+      <h2>Configuration</h2>
+      <small>Saved to your browser with <code>localStorage</code>.</small>
+
+      <h3>Building Hotkeys (numbers)</h3>
+      <table id="building-config-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;">#</th>
+            <th>Building Type</th>
+          </tr>
+        </thead>
+        <tbody id="building-config-body">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+
+      <h3>Unit Keybinds (letters)</h3>
+      <table id="key-config-table">
+        <thead>
+          <tr>
+            <th style="width: 70px;">Key</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody id="key-config-body">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+
+      <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+        <input id="sound-toggle" type="checkbox" />
+        <label for="sound-toggle">Enable sound feedback</label>
+      </div>
+
+      <div class="btn-row">
+        <button id="save-config-btn">Save Config</button>
+        <button id="load-config-btn" class="secondary">Load Saved</button>
+        <button id="defaults-btn" class="secondary">Load Example Defaults</button>
+      </div>
+    </div>
+
+    <!-- TRAINER PANEL -->
+    <div class="panel">
+      <h2>Trainer</h2>
+      <label for="sequence-input">Macro Sequence</label>
+      <textarea id="sequence-input" placeholder="Example: 2s3s4w5w6e7e8e"></textarea>
+
+      <div class="btn-row">
+        <button id="run-btn">Start Training</button>
+        <button id="clear-btn" class="secondary">Clear</button>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch legend-green"></div> Perfect: only valid units built from this building
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch legend-yellow"></div> Mixed: valid unit(s) + wasted keypress(es)
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch legend-red"></div> Bad: only wasted keypress(es) on this building
+        </div>
+      </div>
+
+      <div class="hint">
+        Machine shop logic: a <b>Factory</b> can build vultures; a
+        <b>Factory (Machine Shop)</b> can build vultures and tanks; a
+        <b>Command Center</b> builds SCVs.
+      </div>
+
+      <h3 style="margin-top: 16px;">Buildings</h3>
+      <div id="building-display" class="buildings-grid">
+        <!-- cards injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----- Building / unit rules -----
+    // Internal unit names: 'scv', 'vulture', 'tank'
+    // Building types:
+    //  - 'none'
+    //  - 'command_center'
+    //  - 'factory'
+    //  - 'factory_ms' (factory with machine shop)
+    const BUILDING_RULES = {
+      'command_center': ['scv'],
+      'factory': ['vulture'],
+      'factory_ms': ['vulture', 'tank']
+    };
+
+    const LOCAL_STORAGE_KEY = 'bwMacroTrainerConfig';
+
+    // ----- DOM helpers -----
+    function $(selector) {
+      return document.querySelector(selector);
+    }
+
+    function createElement(tag, attrs = {}, children = []) {
+      const el = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k === 'class') el.className = v;
+        else if (k === 'text') el.textContent = v;
+        else el.setAttribute(k, v);
+      });
+      children.forEach(child => el.appendChild(child));
+      return el;
+    }
+
+    // ----- Config UI setup -----
+    function initBuildingConfigTable() {
+      const tbody = $('#building-config-body');
+      tbody.innerHTML = '';
+      // Hotkeys 1-9
+      for (let n = 1; n <= 9; n++) {
+        const tr = createElement('tr', {
+          'class': 'building-row',
+          'data-hotkey': String(n)
+        });
+
+        const labelCell = createElement('td', {}, [
+          document.createTextNode(String(n))
+        ]);
+
+        const select = createElement('select', { 'data-type-select': '1' });
+        [
+          { value: 'none', label: '— None —' },
+          { value: 'command_center', label: 'Command Center' },
+          { value: 'factory', label: 'Factory' },
+          { value: 'factory_ms', label: 'Factory (Machine Shop)' }
+        ].forEach(opt => {
+          const option = createElement('option', { value: opt.value, text: opt.label });
+          select.appendChild(option);
+        });
+
+        const selectCell = createElement('td');
+        selectCell.appendChild(select);
+
+        tr.appendChild(labelCell);
+        tr.appendChild(selectCell);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function initKeyConfigTable() {
+      const tbody = $('#key-config-body');
+      tbody.innerHTML = '';
+
+      // We provide 6 rows for keys; user can leave some blank.
+      const rows = 6;
+      for (let i = 0; i < rows; i++) {
+        const tr = createElement('tr', { 'class': 'key-row' });
+
+        const keyInput = createElement('input', {
+          type: 'text',
+          maxlength: '1',
+          'class': 'key-input'
+        });
+
+        const keyCell = createElement('td');
+        keyCell.appendChild(keyInput);
+
+        const unitSelect = createElement('select', { 'class': 'unit-select' });
+        [
+          { value: 'none', label: '— None —' },
+          { value: 'scv', label: 'SCV' },
+          { value: 'vulture', label: 'Vulture' },
+          { value: 'tank', label: 'Tank' }
+        ].forEach(opt => {
+          const option = createElement('option', { value: opt.value, text: opt.label });
+          unitSelect.appendChild(option);
+        });
+
+        const unitCell = createElement('td');
+        unitCell.appendChild(unitSelect);
+
+        tr.appendChild(keyCell);
+        tr.appendChild(unitCell);
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ----- Config ⇄ JS conversion -----
+    function getConfigFromUI() {
+      const buildings = {};
+      document.querySelectorAll('.building-row').forEach(row => {
+        const hotkey = row.getAttribute('data-hotkey');
+        const type = row.querySelector('select[data-type-select]').value;
+        if (type && type !== 'none') {
+          buildings[hotkey] = type;
+        }
+      });
+
+      const keys = {};
+      document.querySelectorAll('.key-row').forEach(row => {
+        const keyInput = row.querySelector('.key-input');
+        const unitSelect = row.querySelector('.unit-select');
+        const rawKey = (keyInput.value || '').trim();
+        const unit = unitSelect.value;
+        if (!rawKey || unit === 'none') return;
+        const key = rawKey[0].toUpperCase();
+        keys[key] = unit;
+        // Normalize back into the input
+        keyInput.value = key;
+      });
+
+      const soundEnabled = !!(document.getElementById('sound-toggle') && document.getElementById('sound-toggle').checked);
+      return { buildings, keys, soundEnabled };
+    }
+
+
+    function setConfigToUI(config) {
+      const { buildings = {}, keys = {} } = config || {};
+
+      // Sound toggle
+      if (typeof config?.soundEnabled !== 'undefined') {
+        const el = document.getElementById('sound-toggle');
+        if (el) el.checked = !!config.soundEnabled;
+      }
+
+      // Buildings
+      document.querySelectorAll('.building-row').forEach(row => {
+        const hotkey = row.getAttribute('data-hotkey');
+        const type = buildings[hotkey] || 'none';
+        const select = row.querySelector('select[data-type-select]');
+        select.value = type;
+      });
+
+      // Keys
+      const keyEntries = Object.entries(keys);
+      const keyRows = Array.from(document.querySelectorAll('.key-row'));
+
+      // Clear existing
+      keyRows.forEach(row => {
+        row.querySelector('.key-input').value = '';
+        row.querySelector('.unit-select').value = 'none';
+      });
+
+      keyEntries.forEach(([key, unit], idx) => {
+        if (!keyRows[idx]) return;
+        keyRows[idx].querySelector('.key-input').value = key.toUpperCase();
+        keyRows[idx].querySelector('.unit-select').value = unit;
+      });
+    }
+
+    function saveConfigToLocalStorage() {
+      const cfg = getConfigFromUI();
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cfg));
+        alert('Config saved to localStorage.');
+      } catch (e) {
+        console.error('Failed to save config:', e);
+        alert('Failed to save config (check browser permissions).');
+      }
+    }
+
+    function loadConfigFromLocalStorage() {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) {
+        alert('No saved config found. Try "Load Example Defaults" first.');
+        return;
+      }
+      try {
+        const cfg = JSON.parse(raw);
+        setConfigToUI(cfg);
+        renderBuildingDisplay(cfg.buildings);
+        alert('Config loaded from localStorage.');
+      } catch (e) {
+        console.error('Failed to parse config:', e);
+        alert('Saved config is corrupted or unreadable.');
+      }
+    }
+
+    function applyExampleDefaults() {
+      const exampleConfig = {
+        buildings: {
+          '2': 'command_center',
+          '3': 'command_center',
+          '4': 'factory_ms',
+          '5': 'factory_ms',
+          '6': 'factory',
+          '7': 'factory',
+          '8': 'factory'
+        },
+        keys: {
+          'W': 'tank',
+          'E': 'vulture',
+          'S': 'scv'
+        }
+        , soundEnabled: true
+      };
+      setConfigToUI(exampleConfig);
+      renderBuildingDisplay(exampleConfig.buildings);
+    }
+
+    // ----- Building display -----
+    function renderBuildingDisplay(buildings) {
+      const container = $('#building-display');
+      container.innerHTML = '';
+
+      const entries = Object.entries(buildings || {});
+      if (!entries.length) {
+        container.textContent = 'No buildings configured yet.';
+        return;
+      }
+
+      entries.forEach(([hotkey, type]) => {
+        const card = createElement('div', {
+          'class': 'building-card',
+          'id': 'building-card-' + hotkey,
+          'data-hotkey': hotkey,
+          'data-type': type
+        });
+
+        const hotkeyEl = createElement('div', {
+          'class': 'building-hotkey',
+          'text': hotkey
+        });
+
+        const typeLabel = {
+          'command_center': 'Command Center',
+          'factory': 'Factory',
+          'factory_ms': 'Factory (Machine Shop)'
+        }[type] || type;
+
+        const typeEl = createElement('div', {
+          'class': 'building-type',
+          'text': typeLabel
+        });
+
+        card.appendChild(hotkeyEl);
+        card.appendChild(typeEl);
+
+        container.appendChild(card);
+      });
+    }
+
+    function clearBuildingColors() {
+      document.querySelectorAll('.building-card').forEach(card => {
+        card.classList.remove('status-green', 'status-yellow', 'status-red', 'flash');
+      });
+    }
+
+    // ----- Training logic (continuous) -----
+    let trainingActive = false;
+    let currentBuilding = null;
+    let stats = {};
+    const FLASH_MS = 300;
+
+    function applyFlash(card, status) {
+      if (!card) return;
+      card.classList.remove('status-green', 'status-yellow', 'status-red', 'flash');
+      if (status === 'green') card.classList.add('status-green', 'flash');
+      if (status === 'yellow') card.classList.add('status-yellow', 'flash');
+      if (status === 'red') card.classList.add('status-red', 'flash');
+      // play corresponding sound (if enabled)
+      playSound(status);
+
+      setTimeout(() => {
+        if (card) card.classList.remove('status-green', 'status-yellow', 'status-red', 'flash');
+      }, FLASH_MS);
+    }
+
+    // ----- WebAudio: simple synth for feedback -----
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function resumeAudioIfNeeded() {
+      try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    function playSound(kind) {
+      // check user preference quickly
+      const cfg = getConfigFromUI();
+      if (!cfg.soundEnabled) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      // resume if needed
+      if (ctx.state === 'suspended') ctx.resume();
+
+      if (kind === 'green' || kind === 'yellow') {
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = kind === 'green' ? 80 : 140;
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(kind === 'green' ? 0.35 : 0.25, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (kind === 'red') {
+        // short buzzer using noise filtered
+        const now = ctx.currentTime;
+        const bufferSize = ctx.sampleRate * 0.12;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.6;
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 900;
+        filter.Q.value = 0.8;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.exponentialRampToValueAtTime(0.6, now + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        src.connect(filter);
+        filter.connect(g);
+        g.connect(ctx.destination);
+        src.start(now);
+        src.stop(now + 0.13);
+      }
+    }
+
+    function processKey(ch) {
+      const cfg = getConfigFromUI();
+      const buildings = cfg.buildings;
+      const keys = cfg.keys;
+
+      if (/[0-9]/.test(ch)) {
+        if (buildings[ch]) currentBuilding = ch;
+        else currentBuilding = null;
+        return;
+      }
+
+      if (/[A-Z]/.test(ch)) {
+        if (!currentBuilding || !stats[currentBuilding]) return;
+
+        const unit = keys[ch];
+        if (!unit) {
+          stats[currentBuilding].wastes++;
+          const card = $('#building-card-' + currentBuilding);
+          applyFlash(card, 'red');
+          return;
+        }
+
+        const buildingType = buildings[currentBuilding];
+        const allowedUnits = BUILDING_RULES[buildingType] || [];
+        if (allowedUnits.includes(unit)) stats[currentBuilding].successes++;
+        else stats[currentBuilding].wastes++;
+
+        const st = stats[currentBuilding];
+        let status = 'red';
+        if (st.successes > 0 && st.wastes === 0) status = 'green';
+        else if (st.successes > 0 && st.wastes > 0) status = 'yellow';
+        else if (st.successes === 0 && st.wastes > 0) status = 'red';
+
+        const card = $('#building-card-' + currentBuilding);
+        applyFlash(card, status);
+        stats[currentBuilding].wastes = 0;
+      }
+    }
+
+    function trainingKeyHandler(e) {
+      const ch = e.key.toUpperCase();
+      if (!(/[0-9]/.test(ch) || /^[A-Z]$/.test(ch))) return;
+      e.preventDefault();
+
+      // Always append the pressed key to the sequence textarea (visible feedback)
+      const seqEl = $('#sequence-input');
+      // Append at the end to keep it simple
+      seqEl.value = (seqEl.value || '') + ch;
+
+      processKey(ch);
+    }
+
+    function startTraining() {
+      const cfg = getConfigFromUI();
+      renderBuildingDisplay(cfg.buildings);
+      clearBuildingColors();
+      // ensure audio is resumed on user action
+      resumeAudioIfNeeded();
+
+      stats = {};
+      Object.keys(cfg.buildings || {}).forEach(hotkey => {
+        stats[hotkey] = { successes: 0, wastes: 0 };
+      });
+
+      currentBuilding = null;
+      document.addEventListener('keydown', trainingKeyHandler);
+      trainingActive = true;
+      $('#run-btn').textContent = 'Stop Training';
+    }
+
+    function stopTraining() {
+      document.removeEventListener('keydown', trainingKeyHandler);
+      trainingActive = false;
+      $('#run-btn').textContent = 'Start Training';
+      currentBuilding = null;
+    }
+
+    function toggleTraining() {
+      if (trainingActive) stopTraining();
+      else startTraining();
+    }
+
+    function resetStats() {
+      Object.keys(stats || {}).forEach(k => {
+        stats[k] = { successes: 0, wastes: 0 };
+      });
+    }
+
+    function clearTrainingState() {
+      clearBuildingColors();
+      resetStats();
+      currentBuilding = null;
+    }
+
+    // ----- Init -----
+    function init() {
+      initBuildingConfigTable();
+      initKeyConfigTable();
+
+      // Try to load existing config; if none, load example defaults
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        try {
+          const cfg = JSON.parse(saved);
+          setConfigToUI(cfg);
+          renderBuildingDisplay(cfg.buildings);
+        } catch (_) {
+          applyExampleDefaults();
+        }
+      } else {
+        applyExampleDefaults();
+      }
+
+      // Wire up buttons
+      $('#save-config-btn').addEventListener('click', saveConfigToLocalStorage);
+      $('#load-config-btn').addEventListener('click', loadConfigFromLocalStorage);
+      $('#defaults-btn').addEventListener('click', applyExampleDefaults);
+      $('#run-btn').addEventListener('click', toggleTraining);
+      $('#clear-btn').addEventListener('click', () => clearTrainingState());
+
+      toggleTraining()
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
